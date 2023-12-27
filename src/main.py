@@ -1,13 +1,4 @@
-import datetime
-import time
-import pandas as pd
-import requests
-from loguru import logger
-from telethon.tl.functions.messages import GetHistoryRequest
-from telethon.tl.types import PeerChannel
 
-from config import TelegramConfig
-from db import PgDriver
 import telebot
 import requests
 from telebot import types
