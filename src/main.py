@@ -1,49 +1,123 @@
 import datetime
 import time
-
+import pandas as pd
 import requests
 from loguru import logger
+from telethon.tl.functions.messages import GetHistoryRequest
+from telethon.tl.types import PeerChannel
 
 from config import TelegramConfig
 from db import PgDriver
+import telebot
+import requests
+from telebot import types
+
 
 if __name__ == "__main__":
-    while True:
-        logger.info(f"TIME {datetime.datetime.now().hour}")
+    bot = telebot.TeleBot('6948990728:AAGHj30De5DHCroQEXPSpelKjse2K6HURE4')
 
-        with PgDriver() as curr:
-            curr.execute(
-                """
-                with projects_count as (
-                    select count(phone) as count, pr.id, pr.name from phones ph
-                    left join projects pr on ph.project_id = pr.id
-                    where pr.is_active = true and ph.used = false
-                    group by pr.id, pr.name
-                ),
-                projects_count_users as (
-                    select pc.count, pc.id, pc.name, count(u.id) as active_users_count from projects_count pc
-                    left join project_user pu on pu.project_id = pc.id
-                    left join users u on u.id = pu.user_id
-                    where u.status != 'OFFLINE'
-                    group by pc.id, pc.name, pc.count
-                )
-                select * from projects_count_users
-                where active_users_count > 0
-                """
-            )
 
-            items = curr.fetchall()
+    @bot.message_handler(commands=['lost_calls'])  # создаем команду
+    def lost_calls(message):
+         try:
+            msg = bot.send_message(message.chat.id, """Input date_from, date_to, project_id, user_id in format YYYY-MM-DD/YYYY-MM-DD/proj_id
+If you don\'t want to use project_id   use - instead of project_id """)
+            bot.register_next_step_handler(msg, get_lost_calls2)
+         except:
+            return bot.send_message(message.chat.id,'not correct parametr form')
 
-        for item in items:
-            logger.info(f"{item['name']} - {item['count']} users {item['active_users_count']}")
-            if item["count"] <= 50:
-                text = f"В проекте {item['name']} осталось номеров: {item['count']}"
-                api_url = f'https://api.telegram.org/bot{TelegramConfig.access_token}/sendMessage'
-                params = {'chat_id': "-1002117048282", 'text': text}
+    def get_lost_calls2(message):
+        try:
+            message_from_user = message.text
+            lst_data = message_from_user.split('/')
+            if lst_data[2] == '-':
+                lst_data[2] = None
+            else:
+                lst_data[2] = int(lst_data[2])
 
-                response = requests.post(api_url, params=params)
-                result = response.json()
+            markup1 = types.InlineKeyboardMarkup()
+            response_lost_data = requests.get('http://127.0.0.1:8000/count_lost_calls',
+                                              params={'date_from': lst_data[0], 'date_to': lst_data[1], 'project_id': lst_data[2]})
+            dicti = response_lost_data.json()
+            lst = []
+            for elem in dicti:
+                for key, value in elem.items():
+                    new_lst = []
+                    new_lst.append(key)
+                    new_lst.append(value)
+                    lst.append(new_lst)
+            bot.send_message(message.chat.id, f'{lst}', reply_markup=markup1)
+        except:
+            return bot.send_message(message.chat.id,'not correct parametr form')
 
-                logger.info(f"send_mes, {result}")
 
-        time.sleep(60 * 10)
+    @bot.message_handler(commands=['avg_sec'])  # создаем команду
+    def get_avg_sec(message):
+        try:
+            msg = bot.send_message(message.chat.id, 'Input date_from, date_to in format YYYY-MM-DD/YYYY-MM-DD')
+            bot.register_next_step_handler(msg, get_avg_sec2)
+        except:
+            return bot.send_message(message.chat.id, 'not correct parametr form')
+
+    def get_avg_sec2(message):
+        try:
+            message_from_user = message.text
+            lst_data = message_from_user.split('/')
+
+            markup = types.InlineKeyboardMarkup()
+            response_lost_data = requests.get('http://127.0.0.1:8000/avg_sec_in_status_ready_for_each_user',
+                                              params={'date_from': lst_data[0], 'date_to': lst_data[1]})
+            dicti = response_lost_data.json()
+            bot.send_message(message.chat.id, f'{dicti}', reply_markup=markup)
+        except:
+            return bot.send_message(message.chat.id,'not correct parametr form')
+
+
+
+
+    @bot.message_handler(commands=['conversion'])  # создаем команду
+    def get_conversion(message):
+        try:
+            msg = bot.send_message(message.chat.id, """Input date_from, date_to, project_id, user_id in format YYYY-MM-DD/YYYY-MM-DD/proj_id/user_id
+    If you don\'t want to use project_id or user_id,  use - instead of project_id or user_id""")
+            bot.register_next_step_handler(msg, get_conversion2)
+        except:
+            return bot.send_message(message.chat.id, 'not correct parametr form')
+
+    def get_conversion2(message):
+        try:
+            message_from_user = message.text
+            lst_data = message_from_user.split('/')
+            if lst_data[2] == '-' and lst_data[3] == '-':
+                lst_data[2] = None
+                lst_data[3] = None
+            elif lst_data[2] != '-' and lst_data[3] != '-':
+                lst_data[2] = int(lst_data[2])
+                lst_data[3] = int(lst_data[3])
+            elif lst_data[2] == '-':
+                lst_data[2] = None
+                lst_data[3] = int(lst_data[3])
+            elif lst_data[3] == '-':
+                lst_data[3] = None
+                lst_data[2] = int(lst_data[2])
+            print(lst_data)
+            markup = types.InlineKeyboardMarkup()
+            response_lost_data = requests.get('http://127.0.0.1:8000/conversion',
+                                              params={'date_from': lst_data[0], 'date_to': lst_data[1], 'project_id': lst_data[2], 'user_id': lst_data[3]})
+            dicti = response_lost_data.json()
+
+            bot.send_message(message.chat.id, f'{dicti}', reply_markup=markup)
+        except:
+            return bot.send_message(message.chat.id,'not correct parametr form')
+
+
+    @bot.message_handler(commands=['info_phones'])  # создаем команду
+    def get_info_phones(message):
+        response_lost_data = requests.get('http://127.0.0.1:8000/info_phones')
+        dicti = response_lost_data.json()
+        bot.send_message(message.chat.id, f'{dicti}')
+
+
+    bot.polling(none_stop=True, interval=0)
+
+
