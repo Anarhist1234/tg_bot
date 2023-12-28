@@ -6,8 +6,17 @@ from config import API_URLs, TelegramData
 
 
 if __name__ == "__main__":
+    cnt_filt_for_lost_calls = [0]
+    cnt_filt_for_avg_sec = [0]
+    cnt_filt_for_conversion = [0]
+
+
+    all_messages_for_lost_calls = {}
+    all_messages_for_avg_sec = {}
+    all_messages_for_conversion = {}
 
     bot = telebot.TeleBot(TelegramData.access_token)
+
 
     @bot.message_handler(commands=['start'])
     def keyboard_for_start(message):
