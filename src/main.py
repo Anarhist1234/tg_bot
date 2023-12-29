@@ -49,7 +49,7 @@ def send_message_in_chat_cycle():
             if item["count"] <= 50:
                 text = f"В проекте {item['name']} осталось номеров: {item['count']}"
                 api_url = f'https://api.telegram.org/bot{TelegramData.access_token_ucall_bot}/sendMessage'
-                params = {'chat_id': TelegramData.chat_id, 'text': text}
+                params = {'chat_id': TelegramData.chat_id_for_work, 'text': text}
 
                 response = requests.post(api_url, params=params)
                 result = response.json()
