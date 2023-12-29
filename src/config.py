@@ -18,7 +18,7 @@ class DatabaseConfig:
 
 
 class ADatabaseConfig(DatabaseConfig):
-    # DB_NAME = os.getenv('DB_NAME', "call_system")
+    # DB_NAME = os.getenv('DB_NAME', "call_syste3m")
     # DB_PASSWORD = os.getenv('DB_PASSWORD', "WFpnJMjtPKbwpNaBZQuewNBuCGYQWMyD")
     # DB_HOST = os.getenv('DB_HOST', "65.109.25.177")
     # DB_PORT = os.getenv('DB_PORT', "5432")
@@ -32,12 +32,6 @@ class ADatabaseConfig(DatabaseConfig):
 
     pg_driver = 'asyncpg'
     DB_URL = f'postgresql+{pg_driver}://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
-
-
-class TelegramConfig:
-    access_token = "6565965691:AAGJnmUfKrBc4FaUhHuBL3FNln9gI1Utk94"
-    chat_id = ""
-
 
 class APIConfig:
     API_PREFIX = os.getenv('API_PREFIX', '/api')
@@ -69,7 +63,7 @@ class API_URLs:
 
 class TelegramData:
     access_token = '6948990728:AAGHj30De5DHCroQEXPSpelKjse2K6HURE4'
-    chat_id = ""
+    chat_id = '-4021081261'
 
 
 

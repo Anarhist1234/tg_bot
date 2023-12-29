@@ -8,6 +8,14 @@ from loguru import logger
 from db import PgDriver
 from threading import Thread
 
+bot = telebot.TeleBot(TelegramData.access_token)
+cnt_filt_for_lost_calls = [0]
+cnt_filt_for_avg_sec = [0]
+cnt_filt_for_conversion = [0]
+
+all_messages_for_lost_calls = {}
+all_messages_for_avg_sec = {}
+all_messages_for_conversion = {}
 
 def send_message_in_chat_cycle():
     while True:
@@ -38,28 +46,19 @@ def send_message_in_chat_cycle():
 
         for item in items:
             logger.info(f"{item['name']} - {item['count']} users {item['active_users_count']}")
-            if item["count"] <= 500:
+            if item["count"] <= 50:
                 text = f"В проекте {item['name']} осталось номеров: {item['count']}"
                 api_url = f'https://api.telegram.org/bot{TelegramData.access_token}/sendMessage'
-                params = {'chat_id': "-4021081261", 'text': text}
+                params = {'chat_id': TelegramData.chat_id, 'text': text}
 
                 response = requests.post(api_url, params=params)
                 result = response.json()
 
                 logger.info(f"send_mes, {result}")
 
-        time.sleep(50)
+        time.sleep(10)
+
 def main():
-    cnt_filt_for_lost_calls = [0]
-    cnt_filt_for_avg_sec = [0]
-    cnt_filt_for_conversion = [0]
-
-    all_messages_for_lost_calls = {}
-    all_messages_for_avg_sec = {}
-    all_messages_for_conversion = {}
-
-    bot = telebot.TeleBot(TelegramData.access_token)
-
     @bot.message_handler(commands=['start'])
     def keyboard_for_start(message):
         markup = types.InlineKeyboardMarkup(row_width=3)
@@ -392,7 +391,9 @@ avg_total= {dct['avg_total']}"""
                     all_messages_for_avg_sec.clear()
                 except:
                     bot.send_message(message.chat.id,
-                                     f'Очень большое сообщение. Выполните команду заново и выберите меньший период')
+                                     f'{lst[:4095]}')
+                    bot.send_message(message.chat.id,
+                                     f'Очень большое сообщение. Часть сообщения была обрезана. Выполните команду заново и выберите меньший период')
                     cnt_filt_for_avg_sec = [0]
                     all_messages_for_avg_sec.clear()
 
@@ -477,19 +478,11 @@ avg_total= {dct['avg_total']}"""
                     dicti = response_lost_data.json()
                     dct = dicti[0]
                     key = round(dct['percentage'], 4)
-                    if len(dicti) == 0:
-                        print('Нету информации')
-                        bot.send_message(message.chat.id,
-                                         f'Фильтры = {all_messages_for_conversion[1]}, {all_messages_for_conversion[2]} , {all_messages_for_conversion[3]} , {all_messages_for_conversion[4]}  ')
-                        bot.send_message(message.chat.id, f'Нету информации')
-                        all_messages_for_conversion.clear()
-                        cnt_filt_for_conversion = [0]
-                    else:
-                        bot.send_message(message.chat.id,
-                                         f'Фильтры: {all_messages_for_conversion[1]}, {all_messages_for_conversion[2]} , {all_messages_for_conversion[3]} , {all_messages_for_conversion[4]}  ')
-                        bot.send_message(message.chat.id, f'Процент конверсии = {key}% ')
-                        all_messages_for_conversion.clear()
-                        cnt_filt_for_conversion = [0]
+                    bot.send_message(message.chat.id,
+                                     f'Фильтры: {all_messages_for_conversion[1]}, {all_messages_for_conversion[2]}, {all_messages_for_conversion[3]} , {all_messages_for_conversion[4]}  ')
+                    bot.send_message(message.chat.id, f'Процент конверсии = {key}% ')
+                    all_messages_for_conversion.clear()
+                    cnt_filt_for_conversion = [0]
         except:
             bot.send_message(message.chat.id, f'error')
             all_messages_for_conversion.clear()
@@ -561,7 +554,14 @@ avg_total= {dct['avg_total']}"""
                      /info - Доступные команды
                               """)
 
-    bot.polling(none_stop=True, interval=0)
+    while True:
+        try:
+            bot.polling(non_stop=True, interval=0)
+        except Exception as e:
+            print(e)
+            time.sleep(5)
+            continue
+
 
 
 if __name__ == "__main__":
