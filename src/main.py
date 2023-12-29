@@ -8,7 +8,7 @@ from loguru import logger
 from db import PgDriver
 from threading import Thread
 
-bot = telebot.TeleBot(TelegramData.access_token)
+bot = telebot.TeleBot(TelegramData.access_token_ucall_bot)
 cnt_filt_for_lost_calls = [0]
 cnt_filt_for_avg_sec = [0]
 cnt_filt_for_conversion = [0]
@@ -48,7 +48,7 @@ def send_message_in_chat_cycle():
             logger.info(f"{item['name']} - {item['count']} users {item['active_users_count']}")
             if item["count"] <= 50:
                 text = f"В проекте {item['name']} осталось номеров: {item['count']}"
-                api_url = f'https://api.telegram.org/bot{TelegramData.access_token}/sendMessage'
+                api_url = f'https://api.telegram.org/bot{TelegramData.access_token_ucall_bot}/sendMessage'
                 params = {'chat_id': TelegramData.chat_id, 'text': text}
 
                 response = requests.post(api_url, params=params)
@@ -56,7 +56,7 @@ def send_message_in_chat_cycle():
 
                 logger.info(f"send_mes, {result}")
 
-        time.sleep(10)
+        time.sleep(60*10)
 
 def main():
     @bot.message_handler(commands=['start'])
@@ -288,7 +288,7 @@ avg_total= {dct['avg_total']}"""
                 cnt_filt_for_lost_calls = [0]
                 all_messages_for_lost_calls.clear()
         except:
-            bot.send_message(message.chat.id, f'Some error')
+            bot.send_message(message.chat.id, f'Возникла ошибка, попробуйте снова')
             cnt_filt_for_lost_calls = [0]
             all_messages_for_lost_calls.clear()
 
@@ -398,7 +398,7 @@ avg_total= {dct['avg_total']}"""
                     all_messages_for_avg_sec.clear()
 
         except:
-            bot.send_message(message.chat.id, 'error')
+            bot.send_message(message.chat.id, 'Возникла ошибка. Попробуйте снова')
             cnt_filt_for_avg_sec = [0]
             all_messages_for_avg_sec.clear()
 
@@ -484,7 +484,7 @@ avg_total= {dct['avg_total']}"""
                     all_messages_for_conversion.clear()
                     cnt_filt_for_conversion = [0]
         except:
-            bot.send_message(message.chat.id, f'error')
+            bot.send_message(message.chat.id, f'Возникла ошибка. Попробуйте снова')
             all_messages_for_conversion.clear()
             cnt_filt_for_conversion = [0]
 
@@ -545,14 +545,13 @@ avg_total= {dct['avg_total']}"""
 
     @bot.message_handler(commands=['info'])
     def get_start_for_info(message):
-        bot.send_message(message.chat.id,
-                         """
-                     /avg_sec - Среднее время ожидания операторов(статус READY)
-                     /conversion - Конверсия
-                     /info_phones - Информация о активных операторах
-                     /lost_calls - Информация о потерянных звонках
-                     /info - Доступные команды
-                              """)
+        bot.send_message(message.chat.id,"""
+/avg_sec - Среднее время ожидания операторов(статус READY)
+/conversion - Конверсия
+/info_phones - Информация о активных операторах
+/lost_calls - Информация о потерянных звонках
+/info - Доступные команды
+""")
 
     while True:
         try:

@@ -63,6 +63,7 @@ class API_URLs:
 
 class TelegramData:
     access_token = '6948990728:AAGHj30De5DHCroQEXPSpelKjse2K6HURE4'
+    access_token_ucall_bot = '6565965691:AAGJnmUfKrBc4FaUhHuBL3FNln9gI1Utk94'
     chat_id = '-4021081261'
 
 
