@@ -545,13 +545,14 @@ avg_total= {dct['avg_total']}"""
 
     @bot.message_handler(commands=['info'])
     def get_start_for_info(message):
-        bot.send_message(message.chat.id,"""
-/avg_sec - Среднее время ожидания операторов(статус READY)
-/conversion - Конверсия
-/info_phones - Информация о активных операторах
-/lost_calls - Информация о потерянных звонках
-/info - Доступные команды
-""")
+        bot.send_message(message.chat.id,
+                         """
+                     /avg_sec - Среднее время ожидания операторов(статус READY)
+                     /conversion - Конверсия
+                     /info_phones - Информация о активных операторах
+                     /lost_calls - Информация о потерянных звонках
+                     /info - Доступные команды
+                              """)
 
     while True:
         try:
