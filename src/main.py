@@ -19,7 +19,7 @@ all_messages_for_conversion = {}
 
 def send_message_in_chat_cycle():
     while True:
-        logger.info(f"TIME {datetime.datetime.now().hour}")
+        logger.info(f"TIMES {datetime.datetime.now().hour}")
 
         with PgDriver() as curr:
             curr.execute(
